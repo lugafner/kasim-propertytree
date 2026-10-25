@@ -33,6 +33,8 @@ public:
     return value_;
   }
 
+  NodeType getType() const override { return NodeType::Double; }
+
 private:
   double value_;
 };

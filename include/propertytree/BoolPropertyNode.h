@@ -32,6 +32,8 @@ public:
     return value_;
   }
 
+  NodeType getType() const override { return NodeType::Bool; }
+
 private:
   bool value_;
 };

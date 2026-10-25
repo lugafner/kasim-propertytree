@@ -4,7 +4,6 @@
  */
 
 #pragma once
-#include "EmptyPropertyNode.h"
 #include "PropertyNode.h"
 #include <string>
 
@@ -102,6 +101,7 @@ public:
   BoolPropertyNode* setBool(const std::string& path, const bool value);
 
 private:
+  friend class TestPropertyTree;
   PropertyNode* rootNode_;
   const char path_delimiter_ = '.';
 
@@ -137,6 +137,7 @@ private:
    * @param path The path to split.
    * @return const std::vector<std::string_view> Vector of path segments as
    * string views into the input string.
+   * @note Returned views are valid only while the input string is alive.
    */
   const std::vector<std::string_view> splitPath(const std::string& path);
 
