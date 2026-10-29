@@ -101,7 +101,6 @@ public:
   BoolPropertyNode* setBool(const std::string& path, const bool value);
 
 private:
-  friend class TestPropertyTree;
   PropertyNode* rootNode_;
   const char path_delimiter_ = '.';
 
