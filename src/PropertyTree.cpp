@@ -1,5 +1,6 @@
 
 #include "propertytree/PropertyTree.h"
+#include "propertytree/EmptyPropertyNode.h"
 #include <string>
 #include <string_view>
 
@@ -73,21 +74,6 @@ StringPropertyNode* PropertyTree::setString(const std::string& path,
   return parent_node->addStringProperty(std::string(path_parts.back()), value);
 }
 
-const PropertyNode*
-PropertyTree::getNodeByPathImpl(const std::string& path) const {
-  std::string_view view = path;
-  size_t start = 0;
-  size_t end = view.find(path_delimiter_);
-
-  const PropertyNode* current_node = rootNode_;
-  while (end != std::string_view::npos) {
-    current_node = current_node->getChild(std::string(view.substr(start, end)));
-    start = end + 1;
-    end = view.find(path_delimiter_, start);
-  }
-  return current_node->getChild(std::string(view.substr(start)));
-}
-
 const PropertyNode* PropertyTree::getNodeByPath(const std::string& path) const {
   return getNodeByPathImpl(path);
 }
@@ -96,21 +82,48 @@ PropertyNode* PropertyTree::getNodeByPath(const std::string& path) {
   return const_cast<PropertyNode*>(getNodeByPathImpl(path));
 }
 
-const std::vector<std::string_view>
-PropertyTree::splitPath(const std::string& path) {
-  std::string_view view = path;
-  size_t start = 0;
-  size_t end = view.find(path_delimiter_);
+const PropertyNode*
+PropertyTree::getNodeByPathImpl(const std::string& path) const {
+  std::string_view remaining = path;
+  const PropertyNode* current_node = rootNode_;
 
-  std::vector<std::string_view> path_parts;
-  while (end != std::string_view::npos) {
-    path_parts.push_back(view.substr(start, end));
-    start = end + 1;
-    end = view.find(path_delimiter_, start);
+  while (true) {
+    const size_t pos = remaining.find(path_delimiter_);
+    if (pos == std::string_view::npos) {
+      if (!remaining.empty()) {
+        current_node = current_node->getChild(std::string(remaining));
+      }
+      break;
+    }
+    if (pos > 0) {
+      current_node =
+          current_node->getChild(std::string(remaining.substr(0, pos)));
+    }
+    remaining.remove_prefix(pos + 1);
   }
 
-  path_parts.push_back(view.substr(start, end));
-  return path_parts;
+  return current_node;
+}
+
+const std::vector<std::string_view>
+PropertyTree::splitPath(const std::string& path) {
+  std::vector<std::string_view> parts;
+  std::string_view remaining = path;
+
+  while (true) {
+    const size_t pos = remaining.find(path_delimiter_);
+    if (pos == std::string_view::npos) {
+      if (!remaining.empty())
+        parts.push_back(remaining);
+      break;
+    }
+    if (pos > 0) {
+      parts.push_back(remaining.substr(0, pos));
+    }
+    remaining.remove_prefix(pos + 1);
+  }
+
+  return parts;
 }
 
 PropertyNode*

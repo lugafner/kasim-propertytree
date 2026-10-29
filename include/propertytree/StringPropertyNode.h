@@ -29,6 +29,8 @@ public:
     return (value_.empty() ? false : true);
   }
 
+  NodeType getType() const override { return NodeType::String; }
+
 private:
   std::string value_;
 };

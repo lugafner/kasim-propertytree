@@ -7,6 +7,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(doctest)
 
-add_executable(test_propertytree test_main.cpp)
+add_executable(test_propertytree test_PropertyTree.cpp)
 target_link_libraries(test_propertytree PRIVATE propertytree doctest::doctest)
 add_test(NAME propertytree_tests COMMAND test_propertytree)
+
+add_executable(test_propertynode test_PropertyNode.cpp)
+target_link_libraries(test_propertynode PRIVATE propertytree doctest::doctest)
+add_test(NAME propertynode_tests COMMAND test_propertynode)

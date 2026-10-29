@@ -30,6 +30,11 @@ public:
   virtual ~PropertyNode();
 
   /**
+   * @brief String representation of the available node types
+   */
+  enum class NodeType { Int, Bool, Double, Empty, String };
+
+  /**
    * @brief Returns the child node with the specified key.
    * @param key The key of the child node to retrieve.
    * @return const PropertyNode* Pointer to the child node, or nullptr if not
@@ -122,6 +127,13 @@ public:
   virtual bool getBool() const {
     throw std::runtime_error("No conversion for type bool available");
   }
+
+  /**
+   * @brief Get the node type for type checks
+   * @return NodeType Type of the node
+   * @note Must be overridden by all derived classes
+   */
+  virtual NodeType getType() const = 0;
 
 protected:
   const std::string key_; // The key used to get property by path

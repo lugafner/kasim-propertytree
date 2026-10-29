@@ -36,6 +36,8 @@ public:
     return static_cast<double>(value_);
   }
 
+  NodeType getType() const override { return NodeType::Int; }
+
 private:
   int value_;
 };

@@ -5,7 +5,7 @@
       "name": "msys2-ucrt64-debug",
       "displayName": "MSYS2 UCRT64 Debug",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       },
@@ -17,7 +17,7 @@
       "name": "msys2-ucrt64-release",
       "displayName": "MSYS2 UCRT64 Release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       },
@@ -29,7 +29,7 @@
       "name": "linux-debug",
       "displayName": "Linux Debug",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -38,7 +38,7 @@
       "name": "linux-release",
       "displayName": "Linux Release",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
+      "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
