@@ -50,10 +50,10 @@ Build with CMake presets (requires [Ninja](https://ninja-build.org/)):
 
 ```bash
 cmake --preset linux-debug
-cmake --build build/debug
+cmake --build build
 ```
 
-For a release build, use the `linux-release` preset and the `build/release` directory.
+For a release build, use the `linux-release` preset.
 On Windows under MSYS2 UCRT64, use the `msys2-ucrt64-debug` / `msys2-ucrt64-release` presets.
 
 ## Testing
@@ -62,8 +62,8 @@ Tests use [doctest](https://github.com/doctest/doctest) v2.5.3, fetched automati
 
 ```bash
 cmake --preset linux-debug
-cmake --build build/debug
-ctest --test-dir build/debug
+cmake --build build
+ctest --test-dir build
 ```
 
 ## Integration
