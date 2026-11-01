@@ -1,8 +1,11 @@
 
 #include "propertytree/PropertyTree.h"
 #include "propertytree/BoolPropertyNode.h"
+#include "propertytree/DoublePropertyNode.h"
 #include "propertytree/EmptyPropertyNode.h"
+#include "propertytree/IntPropertyNode.h"
 #include "propertytree/PropertyTreeExceptions.h"
+#include "propertytree/StringPropertyNode.h"
 #include <string>
 #include <string_view>
 
@@ -52,9 +55,17 @@ IntPropertyNode* PropertyTree::setInt(const std::string& path,
                                       const int value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  // TODO: Implement logic when node already exists. See setBool
   // TODO: Add Tests
-  return parent_node->addIntProperty(std::string(path_parts.back()), value);
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addIntProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::Int) {
+    static_cast<IntPropertyNode*>(child_node)->setValue(value);
+    return static_cast<IntPropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::Int);
 }
 
 BoolPropertyNode* PropertyTree::setBool(const std::string& path,
@@ -62,34 +73,50 @@ BoolPropertyNode* PropertyTree::setBool(const std::string& path,
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
   // TODO: Add Tests
-  PropertyNode* child_node =
-      parent_node->getChild(std::string(path_parts.back()));
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
   if (child_node == nullptr) {
-    return parent_node->addBoolProperty(std::string(path_parts.back()), value);
-  } else if (child_node->getType() == PropertyNode::NodeType::Bool) {
+    return parent_node->addBoolProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::Bool) {
     static_cast<BoolPropertyNode*>(child_node)->setValue(value);
     return static_cast<BoolPropertyNode*>(child_node);
-  } else {
-    throw WrongTypeException(path, PropertyNode::NodeType::Bool);
   }
+  throw WrongTypeException(path, PropertyNode::NodeType::Bool);
 }
 
 DoublePropertyNode* PropertyTree::setDouble(const std::string& path,
                                             const double value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  // TODO: Implement logic when node already exists. See setBool
   // TODO: Add Tests
-  return parent_node->addDoubleProperty(std::string(path_parts.back()), value);
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addDoubleProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::Double) {
+    static_cast<DoublePropertyNode*>(child_node)->setValue(value);
+    return static_cast<DoublePropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::Double);
 }
 
 StringPropertyNode* PropertyTree::setString(const std::string& path,
                                             const std::string& value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  // TODO: Implement logic when node already exists. See setBool
   // TODO: Add Tests
-  return parent_node->addStringProperty(std::string(path_parts.back()), value);
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addStringProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::String) {
+    static_cast<StringPropertyNode*>(child_node)->setValue(value);
+    return static_cast<StringPropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::String);
 }
 
 const PropertyNode* PropertyTree::getNodeByPath(const std::string& path) const {

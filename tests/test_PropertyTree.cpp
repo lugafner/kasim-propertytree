@@ -3,6 +3,7 @@
 #include "propertytree/DoublePropertyNode.h"
 #include "propertytree/IntPropertyNode.h"
 #include "propertytree/PropertyTree.h"
+#include "propertytree/PropertyTreeExceptions.h"
 
 TEST_CASE("PropertyTree: Set Values with Paths") {
   PropertyTree tree('.');
@@ -41,10 +42,14 @@ TEST_CASE("PropertyTree: Error Handling") {
   CHECK_THROWS_AS(tree.getInt("root.path"),
                   std::runtime_error); // TODO: Custom error
 
-  // Wrong type
+  // Get Wrong type
   tree.setString("text", "hello");
   CHECK_THROWS_AS(tree.getInt("text"),
                   std::runtime_error); // TODO: Custom error
+
+  // Set wrong type on existing node
+  tree.setInt("existingInt", 4);
+  CHECK_THROWS_AS(tree.setBool("existingInt", false), WrongTypeException);
 
   // Empty path
   CHECK_THROWS_AS(tree.getInt(""), std::runtime_error); // TODO: Custom error
@@ -77,7 +82,7 @@ TEST_CASE("PropertyTree: Edge case incomplete path") {
   tree.setInt(".o.p.", 5);
   CHECK(tree.getInt("o.p") == 5);
 
-  // Ignore empty delimiter
+  // Ignore empty path segment
   tree.setInt("f..g", 6);
   CHECK(tree.getInt("f.g") == 6);
 }
