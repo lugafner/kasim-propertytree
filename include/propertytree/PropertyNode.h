@@ -4,6 +4,7 @@
  */
 
 #pragma once
+#include "assert.h"
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
@@ -33,6 +34,25 @@ public:
    * @brief String representation of the available node types
    */
   enum class NodeType { Int, Bool, Double, Empty, String };
+
+  /**
+   * @brief Returns the node type as string
+   */
+  static constexpr const std::string_view typeAsString(NodeType type) {
+    switch (type) {
+    case NodeType::String:
+      return std::string_view("String");
+    case NodeType::Bool:
+      return std::string_view("Bool");
+    case NodeType::Double:
+      return std::string_view("Double");
+    case NodeType::Int:
+      return std::string_view("Int");
+    case NodeType::Empty:
+      return std::string_view("Empty");
+    }
+    assert(false && "Unhandled NodeType");
+  }
 
   /**
    * @brief Returns the child node with the specified key.

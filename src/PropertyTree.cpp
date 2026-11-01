@@ -1,6 +1,8 @@
 
 #include "propertytree/PropertyTree.h"
+#include "propertytree/BoolPropertyNode.h"
 #include "propertytree/EmptyPropertyNode.h"
+#include "propertytree/PropertyTreeExceptions.h"
 #include <string>
 #include <string_view>
 
@@ -50,6 +52,8 @@ IntPropertyNode* PropertyTree::setInt(const std::string& path,
                                       const int value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
+  // TODO: Implement logic when node already exists. See setBool
+  // TODO: Add Tests
   return parent_node->addIntProperty(std::string(path_parts.back()), value);
 }
 
@@ -57,13 +61,25 @@ BoolPropertyNode* PropertyTree::setBool(const std::string& path,
                                         const bool value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  return parent_node->addBoolProperty(std::string(path_parts.back()), value);
+  // TODO: Add Tests
+  PropertyNode* child_node =
+      parent_node->getChild(std::string(path_parts.back()));
+  if (child_node == nullptr) {
+    return parent_node->addBoolProperty(std::string(path_parts.back()), value);
+  } else if (child_node->getType() == PropertyNode::NodeType::Bool) {
+    static_cast<BoolPropertyNode*>(child_node)->setValue(value);
+    return static_cast<BoolPropertyNode*>(child_node);
+  } else {
+    throw WrongTypeException(path, PropertyNode::NodeType::Bool);
+  }
 }
 
 DoublePropertyNode* PropertyTree::setDouble(const std::string& path,
                                             const double value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
+  // TODO: Implement logic when node already exists. See setBool
+  // TODO: Add Tests
   return parent_node->addDoubleProperty(std::string(path_parts.back()), value);
 }
 
@@ -71,6 +87,8 @@ StringPropertyNode* PropertyTree::setString(const std::string& path,
                                             const std::string& value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
+  // TODO: Implement logic when node already exists. See setBool
+  // TODO: Add Tests
   return parent_node->addStringProperty(std::string(path_parts.back()), value);
 }
 
