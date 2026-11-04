@@ -5,6 +5,7 @@
 #include "propertytree/EmptyPropertyNode.h"
 #include "propertytree/IntPropertyNode.h"
 #include "propertytree/PropertyNode.h"
+#include "propertytree/PropertyTreeExceptions.h"
 #include "propertytree/StringPropertyNode.h"
 
 TEST_CASE("PropertyNode: Add child nodes") {
@@ -43,35 +44,28 @@ TEST_CASE("PropertyNode: Type Conversion") {
   CHECK(intNode.getInt() == 42);
   CHECK(intNode.getDouble() == doctest::Approx(42.0));
   CHECK(intNode.getBool() == true); // 42 != 0 → true
-  CHECK_THROWS_AS(intNode.getString(),
-                  std::runtime_error); // TODO: Check custom error
+  CHECK_THROWS_AS(intNode.getString(), WrongTypeException);
 
   // Bool
   BoolPropertyNode boolNode("bool", true);
   CHECK(boolNode.getBool() == true);
   CHECK(boolNode.getInt() == 1);
-  CHECK_THROWS_AS(boolNode.getDouble(),
-                  std::runtime_error); // TODO: Check custom error
-  CHECK_THROWS_AS(boolNode.getString(),
-                  std::runtime_error); // TODO: Check custom error
+  CHECK_THROWS_AS(boolNode.getDouble(), WrongTypeException);
+  CHECK_THROWS_AS(boolNode.getString(), WrongTypeException);
 
   // Double
   DoublePropertyNode doubleNode("double", 3.7);
   CHECK(doubleNode.getDouble() == doctest::Approx(3.7));
   CHECK(doubleNode.getInt() == 4); // std::round(3.7) = 4
-  CHECK_THROWS_AS(doubleNode.getBool(),
-                  std::runtime_error); // TODO: Check custom error
-  CHECK_THROWS_AS(doubleNode.getString(),
-                  std::runtime_error); // TODO: Check custom error
+  CHECK_THROWS_AS(doubleNode.getBool(), WrongTypeException);
+  CHECK_THROWS_AS(doubleNode.getString(), WrongTypeException);
 
   // String
   StringPropertyNode strNode("str", "hello");
   CHECK_EQ(strNode.getString(), "hello");
   CHECK(strNode.getBool() == true); // nicht leer → true
-  CHECK_THROWS_AS(strNode.getInt(),
-                  std::runtime_error); // TODO: Check custom error
-  CHECK_THROWS_AS(strNode.getDouble(),
-                  std::runtime_error); // TODO: Check custom error
+  CHECK_THROWS_AS(strNode.getInt(), WrongTypeException);
+  CHECK_THROWS_AS(strNode.getDouble(), WrongTypeException);
 
   StringPropertyNode emptyStrNode("empty", "");
   CHECK(emptyStrNode.getBool() == false);

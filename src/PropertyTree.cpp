@@ -1,6 +1,11 @@
 
 #include "propertytree/PropertyTree.h"
+#include "propertytree/BoolPropertyNode.h"
+#include "propertytree/DoublePropertyNode.h"
 #include "propertytree/EmptyPropertyNode.h"
+#include "propertytree/IntPropertyNode.h"
+#include "propertytree/PropertyTreeExceptions.h"
+#include "propertytree/StringPropertyNode.h"
 #include <string>
 #include <string_view>
 
@@ -16,33 +21,21 @@ PropertyTree::~PropertyTree() {
 
 int PropertyTree::getInt(const std::string& path) const {
   const PropertyNode* node = getNodeByPath(path);
-  if (node == nullptr) {
-    throw std::runtime_error("No property under path " + path);
-  }
   return node->getInt();
 }
 
 double PropertyTree::getDouble(const std::string& path) const {
   const PropertyNode* node = getNodeByPath(path);
-  if (node == nullptr) {
-    throw std::runtime_error("No property under path " + path);
-  }
   return node->getDouble();
 }
 
 const std::string& PropertyTree::getString(const std::string& path) const {
   const PropertyNode* node = getNodeByPath(path);
-  if (node == nullptr) {
-    throw std::runtime_error("No property under path " + path);
-  }
   return node->getString();
 }
 
 bool PropertyTree::getBool(const std::string& path) const {
   const PropertyNode* node = getNodeByPath(path);
-  if (node == nullptr) {
-    throw std::runtime_error("No property under path " + path);
-  }
   return node->getBool();
 }
 
@@ -50,28 +43,68 @@ IntPropertyNode* PropertyTree::setInt(const std::string& path,
                                       const int value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  return parent_node->addIntProperty(std::string(path_parts.back()), value);
+  // TODO: Add Tests
+  std::string_view value_node = path_parts.back();
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addIntProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::Int) {
+    static_cast<IntPropertyNode*>(child_node)->setValue(value);
+    return static_cast<IntPropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::Int);
 }
 
 BoolPropertyNode* PropertyTree::setBool(const std::string& path,
                                         const bool value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  return parent_node->addBoolProperty(std::string(path_parts.back()), value);
+  // TODO: Add Tests
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addBoolProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::Bool) {
+    static_cast<BoolPropertyNode*>(child_node)->setValue(value);
+    return static_cast<BoolPropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::Bool);
 }
 
 DoublePropertyNode* PropertyTree::setDouble(const std::string& path,
                                             const double value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  return parent_node->addDoubleProperty(std::string(path_parts.back()), value);
+  // TODO: Add Tests
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addDoubleProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::Double) {
+    static_cast<DoublePropertyNode*>(child_node)->setValue(value);
+    return static_cast<DoublePropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::Double);
 }
 
 StringPropertyNode* PropertyTree::setString(const std::string& path,
                                             const std::string& value) {
   std::vector<std::string_view> path_parts = splitPath(path);
   PropertyNode* parent_node = createNodeTree(path_parts);
-  return parent_node->addStringProperty(std::string(path_parts.back()), value);
+  // TODO: Add Tests
+  std::string value_node = std::string(path_parts.back());
+  PropertyNode* child_node = parent_node->getChild(value_node);
+  if (child_node == nullptr) {
+    return parent_node->addStringProperty(value_node, value);
+  }
+  if (child_node->getType() == PropertyNode::NodeType::String) {
+    static_cast<StringPropertyNode*>(child_node)->setValue(value);
+    return static_cast<StringPropertyNode*>(child_node);
+  }
+  throw WrongTypeException(path, PropertyNode::NodeType::String);
 }
 
 const PropertyNode* PropertyTree::getNodeByPath(const std::string& path) const {
@@ -89,15 +122,26 @@ PropertyTree::getNodeByPathImpl(const std::string& path) const {
 
   while (true) {
     const size_t pos = remaining.find(path_delimiter_);
+    if (pos == 0) {
+      // Path starts with delimiter or segment is empty
+      throw InvalidPathException(path);
+    }
+    if (remaining.empty()) {
+      // Path ends with delimiter or is empty
+      throw InvalidPathException(path);
+    }
     if (pos == std::string_view::npos) {
-      if (!remaining.empty()) {
-        current_node = current_node->getChild(std::string(remaining));
+      // No more delimiter in remaining
+      current_node = current_node->getChild(remaining);
+      if (current_node == nullptr) {
+        throw PropertyNotFoundException(path);
       }
       break;
     }
-    if (pos > 0) {
-      current_node =
-          current_node->getChild(std::string(remaining.substr(0, pos)));
+    std::string_view current_key = remaining.substr(0, pos);
+    current_node = current_node->getChild(current_key);
+    if (current_node == nullptr) {
+      throw PropertyNotFoundException(path);
     }
     remaining.remove_prefix(pos + 1);
   }
@@ -106,20 +150,26 @@ PropertyTree::getNodeByPathImpl(const std::string& path) const {
 }
 
 const std::vector<std::string_view>
-PropertyTree::splitPath(const std::string& path) {
+PropertyTree::splitPath(const std::string& path) const {
   std::vector<std::string_view> parts;
   std::string_view remaining = path;
 
   while (true) {
     const size_t pos = remaining.find(path_delimiter_);
+    if (pos == 0) {
+      // Path starts with delimiter or segment is empty
+      throw InvalidPathException(path);
+    }
+    if (remaining.empty()) {
+      // Path ends with delimiter or is empty
+      throw InvalidPathException(path);
+    }
     if (pos == std::string_view::npos) {
-      if (!remaining.empty())
-        parts.push_back(remaining);
+      // No more delimiter in remaining
+      parts.push_back(remaining);
       break;
     }
-    if (pos > 0) {
-      parts.push_back(remaining.substr(0, pos));
-    }
+    parts.push_back(remaining.substr(0, pos));
     remaining.remove_prefix(pos + 1);
   }
 
@@ -132,7 +182,7 @@ PropertyTree::createNodeTree(const std::vector<std::string_view>& path_parts) {
   PropertyNode* current_node = last_node;
   std::string current_key;
   for (size_t i = 0; i < path_parts.size() - 1; i++) {
-    current_key = std::string(path_parts[i]);
+    current_key = path_parts[i];
     current_node = last_node->getChild(current_key);
     if (current_node == nullptr) {
       current_node = last_node->addEmptyProperty(current_key);
