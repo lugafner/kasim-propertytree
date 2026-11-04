@@ -25,10 +25,7 @@ PropertyNode::~PropertyNode() {
 
 PropertyNode* PropertyNode::getChild(std::string_view key) const {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  auto child_iterator = children_.find(key);
-
-  // Return nullptr if key is not present
-  return (child_iterator == children_.end() ? nullptr : child_iterator->second);
+  return findChildImpl(key);
 }
 
 std::vector<PropertyNode*> PropertyNode::getChildren() const {
@@ -59,7 +56,7 @@ const std::string& PropertyNode::getString() const {
 IntPropertyNode* PropertyNode::addIntProperty(std::string_view key,
                                               const int value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (getChild(key) != nullptr) {
+  if (findChildImpl(key) != nullptr) {
     throw PropertyAlreadyExistsException(std::string(key));
   }
   IntPropertyNode* child = new IntPropertyNode(std::string(key), value);
@@ -70,7 +67,7 @@ IntPropertyNode* PropertyNode::addIntProperty(std::string_view key,
 DoublePropertyNode* PropertyNode::addDoubleProperty(std::string_view key,
                                                     const double value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (getChild(key) != nullptr) {
+  if (findChildImpl(key) != nullptr) {
     throw PropertyAlreadyExistsException(std::string(key));
   }
   DoublePropertyNode* child = new DoublePropertyNode(std::string(key), value);
@@ -81,7 +78,7 @@ DoublePropertyNode* PropertyNode::addDoubleProperty(std::string_view key,
 BoolPropertyNode* PropertyNode::addBoolProperty(std::string_view key,
                                                 const bool value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (getChild(key) != nullptr) {
+  if (findChildImpl(key) != nullptr) {
     throw PropertyAlreadyExistsException(std::string(key));
   }
   BoolPropertyNode* child = new BoolPropertyNode(std::string(key), value);
@@ -92,7 +89,7 @@ BoolPropertyNode* PropertyNode::addBoolProperty(std::string_view key,
 StringPropertyNode* PropertyNode::addStringProperty(std::string_view key,
                                                     const std::string& value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (getChild(key) != nullptr) {
+  if (findChildImpl(key) != nullptr) {
     throw PropertyAlreadyExistsException(std::string(key));
   }
   StringPropertyNode* child = new StringPropertyNode(std::string(key), value);
@@ -102,10 +99,17 @@ StringPropertyNode* PropertyNode::addStringProperty(std::string_view key,
 
 EmptyPropertyNode* PropertyNode::addEmptyProperty(std::string_view key) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  if (getChild(key) != nullptr) {
+  if (findChildImpl(key) != nullptr) {
     throw PropertyAlreadyExistsException(std::string(key));
   }
   EmptyPropertyNode* child = new EmptyPropertyNode(std::string(key));
   children_[child->getName()] = checkPointer(child);
   return child;
+}
+
+PropertyNode* PropertyNode::findChildImpl(std::string_view key) const {
+  auto child_iterator = children_.find(key);
+
+  // Return nullptr if key is not present
+  return (child_iterator == children_.end() ? nullptr : child_iterator->second);
 }

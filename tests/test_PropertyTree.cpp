@@ -36,22 +36,36 @@ TEST_CASE("PropertyTree: Get Values with Paths") {
 
 TEST_CASE("PropertyTree: Error Handling") {
   PropertyTree tree('.');
-  tree.setInt("root", 5);
+  tree.setInt("root.path", 5);
 
   // Wrong path
-  CHECK_THROWS_AS(tree.getInt("root.path"), PropertyNotFoundException);
+  CHECK_THROWS_AS(tree.getInt("root.value"), PropertyNotFoundException);
 
   // Get Wrong type
   tree.setString("text", "hello");
-  CHECK_THROWS_AS(tree.getInt("text"),
-                  std::runtime_error); // TODO: Custom error
+  CHECK_THROWS_AS(tree.getInt("text"), WrongTypeException);
 
   // Set wrong type on existing node
   tree.setInt("existingInt", 4);
   CHECK_THROWS_AS(tree.setBool("existingInt", false), WrongTypeException);
 
   // Empty path
-  CHECK_THROWS_AS(tree.getInt(""), std::runtime_error); // TODO: Custom error
+  CHECK_THROWS_AS(tree.setInt("", 3), InvalidPathException);
+  CHECK_THROWS_AS(tree.getInt(""), InvalidPathException);
+
+  // Leading delimiter
+  CHECK_THROWS_AS(tree.setInt(".a.b", 3), InvalidPathException);
+  CHECK_THROWS_AS(tree.getInt(".a.b"), InvalidPathException);
+
+  // Trailing delimiter
+  CHECK_THROWS_AS(tree.setInt("x.y.", 4), InvalidPathException);
+  tree.setInt("x.y", 4);
+  CHECK_THROWS_AS(tree.getInt("x.y."), InvalidPathException);
+
+  // Double delimiter not allowed
+  CHECK_THROWS_AS(tree.setInt("f..g", 6), InvalidPathException);
+  tree.setInt("f.g", 6);
+  CHECK_THROWS_AS(tree.getInt("f..g"), InvalidPathException);
 }
 
 TEST_CASE("PropertyTree: Delimiter") {
@@ -64,20 +78,4 @@ TEST_CASE("PropertyTree: Delimiter") {
   PropertyTree tree2('/');
   tree2.setBool("a/b/c", false);
   CHECK(tree2.getBool("a/b/c") == false);
-}
-
-TEST_CASE("PropertyTree: Edge case incomplete path") {
-  PropertyTree tree('.');
-
-  // Leading delimiter should work
-  tree.setInt("a.b", 3);
-  CHECK(tree.getInt(".a.b") == 3);
-
-  // Trailing delimiter not allowed
-  tree.setInt("x.y", 4);
-  CHECK_THROWS_AS(tree.getInt("x.y."), InvalidPathException);
-
-  // Double delimiter not allowed
-  tree.setInt("f.g", 6);
-  CHECK_THROWS_AS(tree.getInt("f..g"), InvalidPathException);
 }

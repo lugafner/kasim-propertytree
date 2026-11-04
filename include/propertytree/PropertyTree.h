@@ -138,7 +138,7 @@ private:
    * string views into the input string.
    * @note Returned views are valid only while the input string is alive.
    */
-  const std::vector<std::string_view> splitPath(const std::string& path);
+  const std::vector<std::string_view> splitPath(const std::string& path) const;
 
   /**
    * @brief Ensures all intermediate nodes for a path exist, creating empty

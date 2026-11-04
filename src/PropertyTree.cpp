@@ -127,7 +127,7 @@ PropertyTree::getNodeByPathImpl(const std::string& path) const {
       throw InvalidPathException(path);
     }
     if (remaining.empty()) {
-      // Path ends with delimiter
+      // Path ends with delimiter or is empty
       throw InvalidPathException(path);
     }
     if (pos == std::string_view::npos) {
@@ -150,21 +150,26 @@ PropertyTree::getNodeByPathImpl(const std::string& path) const {
 }
 
 const std::vector<std::string_view>
-PropertyTree::splitPath(const std::string& path) {
-  // TODO: Add logic from getNodeFromPathImpl
+PropertyTree::splitPath(const std::string& path) const {
   std::vector<std::string_view> parts;
   std::string_view remaining = path;
 
   while (true) {
     const size_t pos = remaining.find(path_delimiter_);
+    if (pos == 0) {
+      // Path starts with delimiter or segment is empty
+      throw InvalidPathException(path);
+    }
+    if (remaining.empty()) {
+      // Path ends with delimiter or is empty
+      throw InvalidPathException(path);
+    }
     if (pos == std::string_view::npos) {
-      if (!remaining.empty())
-        parts.push_back(remaining);
+      // No more delimiter in remaining
+      parts.push_back(remaining);
       break;
     }
-    if (pos > 0) {
-      parts.push_back(remaining.substr(0, pos));
-    }
+    parts.push_back(remaining.substr(0, pos));
     remaining.remove_prefix(pos + 1);
   }
 

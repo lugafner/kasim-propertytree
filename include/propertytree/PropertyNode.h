@@ -162,6 +162,15 @@ protected:
   mutable std::shared_mutex mutex_; // Mutex (must be mutable)
 
   /**
+   * @brief Finds a child node by its key
+   * @param key The key of the child node
+   * @return PropertyNode* The pointer tho the child node or nullptr if the
+   * child not exists
+   * @warning The thread must be locked by the caller
+   */
+  PropertyNode* findChildImpl(std::string_view key) const;
+
+  /**
    * @brief Validates that a pointer is no nullptr.
    * @tparam T The type of the pointer.
    * @param ptr The pointer to check.
