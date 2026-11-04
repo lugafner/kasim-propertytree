@@ -39,8 +39,7 @@ TEST_CASE("PropertyTree: Error Handling") {
   tree.setInt("root", 5);
 
   // Wrong path
-  CHECK_THROWS_AS(tree.getInt("root.path"),
-                  std::runtime_error); // TODO: Custom error
+  CHECK_THROWS_AS(tree.getInt("root.path"), PropertyNotFoundException);
 
   // Get Wrong type
   tree.setString("text", "hello");
@@ -70,19 +69,15 @@ TEST_CASE("PropertyTree: Delimiter") {
 TEST_CASE("PropertyTree: Edge case incomplete path") {
   PropertyTree tree('.');
 
-  // Leading delimiter
-  tree.setInt(".a.b", 3);
-  CHECK(tree.getInt("a.b") == 3);
+  // Leading delimiter should work
+  tree.setInt("a.b", 3);
+  CHECK(tree.getInt(".a.b") == 3);
 
-  // Trailing delimiter
-  tree.setInt("x.y.", 4);
-  CHECK(tree.getInt("x.y") == 4);
+  // Trailing delimiter not allowed
+  tree.setInt("x.y", 4);
+  CHECK_THROWS_AS(tree.getInt("x.y."), InvalidPathException);
 
-  // Leading and trailing delimiter
-  tree.setInt(".o.p.", 5);
-  CHECK(tree.getInt("o.p") == 5);
-
-  // Ignore empty path segment
-  tree.setInt("f..g", 6);
-  CHECK(tree.getInt("f.g") == 6);
+  // Double delimiter not allowed
+  tree.setInt("f.g", 6);
+  CHECK_THROWS_AS(tree.getInt("f..g"), InvalidPathException);
 }

@@ -43,15 +43,27 @@ public:
       : PropertyTreeException(std::format("Invalid path: {}", path)) {}
 };
 
-/** @brief Wrong type exceptio
+/** @brief Wrong type exception
  * Use when the called getter or setter functio for the given node is not
  * available
  */
 class WrongTypeException : public PropertyTreeException {
 public:
   explicit WrongTypeException(const std::string& path,
-                              const PropertyNode::NodeType nodeType)
+                              PropertyNode::NodeType nodeType)
       : PropertyTreeException(std::format(
             "Wrong type: Called function not available on node {} with type {}",
             path, PropertyNode::typeAsString(nodeType))) {}
+};
+
+/** @brief Property already exists and will not be created
+ * Exception thrown when a child is created directly over the Node API. When
+ * using the property tree API (i.e. see @b setInt), the value will be overriden
+ * without error
+ */
+class PropertyAlreadyExistsException : public PropertyTreeException {
+public:
+  explicit PropertyAlreadyExistsException(const std::string& path)
+      : PropertyTreeException(
+            std::format("Property already exists: {}", path)) {}
 };

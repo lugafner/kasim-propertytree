@@ -8,6 +8,7 @@
 #include "propertytree/DoublePropertyNode.h"
 #include "propertytree/EmptyPropertyNode.h"
 #include "propertytree/IntPropertyNode.h"
+#include "propertytree/PropertyTreeExceptions.h"
 #include "propertytree/StringPropertyNode.h"
 #include <mutex>
 #include <shared_mutex>
@@ -22,7 +23,7 @@ PropertyNode::~PropertyNode() {
   children_.clear();
 }
 
-PropertyNode* PropertyNode::getChild(const std::string& key) const {
+PropertyNode* PropertyNode::getChild(std::string_view key) const {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   auto child_iterator = children_.find(key);
 
@@ -41,41 +42,70 @@ std::vector<PropertyNode*> PropertyNode::getChildren() const {
   return children;
 }
 
-IntPropertyNode* PropertyNode::addIntProperty(const std::string& key,
+int PropertyNode::getInt() const { throw WrongTypeException(key_, getType()); }
+
+bool PropertyNode::getBool() const {
+  throw WrongTypeException(key_, getType());
+}
+
+double PropertyNode::getDouble() const {
+  throw WrongTypeException(key_, getType());
+}
+
+const std::string& PropertyNode::getString() const {
+  throw WrongTypeException(key_, getType());
+}
+
+IntPropertyNode* PropertyNode::addIntProperty(std::string_view key,
                                               const int value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  IntPropertyNode* child = new IntPropertyNode(key, value);
-  children_[key] = checkPointer(child);
+  if (getChild(key) != nullptr) {
+    throw PropertyAlreadyExistsException(std::string(key));
+  }
+  IntPropertyNode* child = new IntPropertyNode(std::string(key), value);
+  children_[child->getName()] = checkPointer(child);
   return child;
 }
 
-DoublePropertyNode* PropertyNode::addDoubleProperty(const std::string& key,
+DoublePropertyNode* PropertyNode::addDoubleProperty(std::string_view key,
                                                     const double value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  DoublePropertyNode* child = new DoublePropertyNode(key, value);
-  children_[key] = checkPointer(child);
+  if (getChild(key) != nullptr) {
+    throw PropertyAlreadyExistsException(std::string(key));
+  }
+  DoublePropertyNode* child = new DoublePropertyNode(std::string(key), value);
+  children_[child->getName()] = checkPointer(child);
   return child;
 }
 
-BoolPropertyNode* PropertyNode::addBoolProperty(const std::string& key,
+BoolPropertyNode* PropertyNode::addBoolProperty(std::string_view key,
                                                 const bool value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  BoolPropertyNode* child = new BoolPropertyNode(key, value);
-  children_[key] = checkPointer(child);
+  if (getChild(key) != nullptr) {
+    throw PropertyAlreadyExistsException(std::string(key));
+  }
+  BoolPropertyNode* child = new BoolPropertyNode(std::string(key), value);
+  children_[child->getName()] = checkPointer(child);
   return child;
 }
 
-StringPropertyNode* PropertyNode::addStringProperty(const std::string& key,
+StringPropertyNode* PropertyNode::addStringProperty(std::string_view key,
                                                     const std::string& value) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  StringPropertyNode* child = new StringPropertyNode(key, value);
-  children_[key] = checkPointer(child);
+  if (getChild(key) != nullptr) {
+    throw PropertyAlreadyExistsException(std::string(key));
+  }
+  StringPropertyNode* child = new StringPropertyNode(std::string(key), value);
+  children_[child->getName()] = checkPointer(child);
   return child;
 }
 
-EmptyPropertyNode* PropertyNode::addEmptyProperty(const std::string& key) {
+EmptyPropertyNode* PropertyNode::addEmptyProperty(std::string_view key) {
   std::unique_lock<std::shared_mutex> lock(mutex_);
-  EmptyPropertyNode* child = new EmptyPropertyNode(key);
-  children_[key] = checkPointer(child);
+  if (getChild(key) != nullptr) {
+    throw PropertyAlreadyExistsException(std::string(key));
+  }
+  EmptyPropertyNode* child = new EmptyPropertyNode(std::string(key));
+  children_[child->getName()] = checkPointer(child);
   return child;
 }

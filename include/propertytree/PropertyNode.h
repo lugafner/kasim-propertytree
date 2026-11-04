@@ -18,6 +18,9 @@ class DoublePropertyNode;
 class StringPropertyNode;
 class EmptyPropertyNode;
 
+// Forward declaration of exceptions;
+class WrongTypeException;
+
 /** @brief Parent Node class for property tree
  *  @warning
  *  - @b Circular References: Adding a node as its own ancestor (directly or
@@ -35,9 +38,16 @@ public:
   enum class NodeType { Int, Bool, Double, Empty, String };
 
   /**
+   * @brief Get the node type for type checks
+   * @return NodeType Type of the node
+   * @note Must be overridden by all derived classes
+   */
+  virtual NodeType getType() const = 0;
+
+  /**
    * @brief Returns the node type as string
    */
-  static constexpr const std::string_view typeAsString(NodeType type) {
+  static constexpr std::string_view typeAsString(NodeType type) {
     switch (type) {
     case NodeType::String:
       return std::string_view("String");
@@ -55,11 +65,11 @@ public:
 
   /**
    * @brief Returns the child node with the specified key.
-   * @param key The key of the child node to retrieve.
+   * @param key The key of the child node to retrieve as string_view.
    * @return const PropertyNode* Pointer to the child node, or nullptr if not
    * found.
    */
-  PropertyNode* getChild(const std::string& key) const;
+  PropertyNode* getChild(std::string_view key) const;
 
   /**
    * @brief Returns all direct child nodes of this property node.
@@ -69,12 +79,18 @@ public:
   std::vector<PropertyNode*> getChildren() const;
 
   /**
+   * @brief Returns the key of the node
+   * @return std::string_view on the private member key
+   */
+  std::string_view getName() const { return std::string_view(key_); }
+
+  /**
    * @brief Adds a new integer property node as a child.
    * @param key The key for the new property.
    * @param value The integer value to store.
    * @throws std::invalid_argument If the created node pointer is nullptr.
    */
-  IntPropertyNode* addIntProperty(const std::string& key, const int value);
+  IntPropertyNode* addIntProperty(std::string_view key, const int value);
 
   /**
    * @brief Adds a new double property node as a child.
@@ -82,7 +98,7 @@ public:
    * @param value The double value to store.
    * @throws std::invalid_argument If the created node pointer is nullptr.
    */
-  DoublePropertyNode* addDoubleProperty(const std::string& key,
+  DoublePropertyNode* addDoubleProperty(std::string_view key,
                                         const double value);
 
   /**
@@ -91,7 +107,7 @@ public:
    * @param value The boolean value to store.
    * @throws std::invalid_argument If the created node pointer is nullptr.
    */
-  BoolPropertyNode* addBoolProperty(const std::string& key, const bool value);
+  BoolPropertyNode* addBoolProperty(std::string_view key, const bool value);
 
   /**
    * @brief Adds a new string property node as a child.
@@ -99,64 +115,49 @@ public:
    * @param value The string value to store.
    * @throws std::invalid_argument If the created node pointer is nullptr.
    */
-  StringPropertyNode* addStringProperty(const std::string& key,
+  StringPropertyNode* addStringProperty(std::string_view key,
                                         const std::string& value);
 
-  EmptyPropertyNode* addEmptyProperty(const std::string& key);
+  EmptyPropertyNode* addEmptyProperty(std::string_view key);
 
   /**
    * @brief Get the property value as integer
    * @return int The stored value as integer
-   * @throws std::runtime_error If this node does not support integer
+   * @throws WrongTypeException If this node does not support integer
    * conversion
    * @note Must be overridden by derived classes that store integer values
    */
-  virtual int getInt() const {
-    throw std::runtime_error("No conversion for type int available");
-  }
+  virtual int getInt() const;
 
   /**
    * @brief Get the property value as double
    * @return double The stored value as double
-   * @throws std::runtime_error If this node does not support double
+   * @throws WrongTypeException If this node does not support double
    * conversion
    * @note Must be overridden by derived classes that store double values
    */
-  virtual double getDouble() const {
-    throw std::runtime_error("No conversion for type double available");
-  }
+  virtual double getDouble() const;
 
   /**
    * @brief Get the property value as string
    * @return string& The stored value as const string reference
-   * @throws std::runtime_error If this node does not support string
+   * @throws WrongTypeException If this node does not support string
    * conversion
    * @note Must be overridden by derived classes that store string values
    */
-  virtual const std::string& getString() const {
-    throw std::runtime_error("No conversion for type string available");
-  }
+  virtual const std::string& getString() const;
 
   /**
    * @brief Get the property value as boolean
    * @return bool The stored value as bool
-   * @throws std::runtime_error If this node does not support bool conversion
+   * @throws WrongTypeException If this node does not support bool conversion
    * @note Must be overridden by derived classes that store bool values
    */
-  virtual bool getBool() const {
-    throw std::runtime_error("No conversion for type bool available");
-  }
-
-  /**
-   * @brief Get the node type for type checks
-   * @return NodeType Type of the node
-   * @note Must be overridden by all derived classes
-   */
-  virtual NodeType getType() const = 0;
+  virtual bool getBool() const;
 
 protected:
   const std::string key_; // The key used to get property by path
-  std::unordered_map<std::string, PropertyNode*>
+  std::unordered_map<std::string_view, PropertyNode*>
       children_; // Map holding the key and the pointer for each child
   mutable std::shared_mutex mutex_; // Mutex (must be mutable)
 
